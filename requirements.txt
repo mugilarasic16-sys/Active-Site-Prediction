@@ -3,4 +3,3 @@ pandas
 numpy
 biopython
 python-docx
-streamlit-molstar
