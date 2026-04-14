@@ -4,24 +4,23 @@ import io
 from Bio.PDB import PDBList, PDBParser
 from docx import Document
 from docx.shared import RGBColor
-import py3Dmol
-from st_py3dmol import show_st_py3dmol
+# Replacing py3Dmol with streamlit-molstar
+from streamlit_molstar import st_molstar
 
-# Set page config at the very top
+# 1. Set page config MUST be the first Streamlit command
 st.set_page_config(page_title="Protein Analyzer", layout="wide")
 
 st.title("🧬 Protein Active Site Analyzer")
 
-# 1. Sidebar Inputs
+# 2. Sidebar Inputs
 uploaded_file = st.sidebar.file_uploader("Upload PDB File", type=['pdb', 'ent'])
 pdb_id = st.sidebar.text_input("OR Enter PDB ID (e.g., 4NOS)").strip().upper()
 
 file_path = None
 name_tag = "protein"
 
-# 2. File Handling
+# 3. File Handling
 if uploaded_file:
-    # Use a generic name to avoid path issues
     file_path = "temp_input.pdb"
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
@@ -29,13 +28,15 @@ if uploaded_file:
 elif pdb_id:
     pdbl = PDBList()
     # Download to current directory
-    file_path = pdbl.retrieve_pdb_file(pdb_id, pdir='.', file_format='pdb')
-    # Biopython might name the file 'pdb4nos.ent', we need to find it
-    if not os.path.exists(file_path) and os.path.exists(f"pdb{pdb_id.lower()}.ent"):
+    downloaded_file = pdbl.retrieve_pdb_file(pdb_id, pdir='.', file_format='pdb')
+    # Handle the specific naming convention Biopython uses
+    if os.path.exists(downloaded_file):
+        file_path = downloaded_file
+    elif os.path.exists(f"pdb{pdb_id.lower()}.ent"):
         file_path = f"pdb{pdb_id.lower()}.ent"
     name_tag = pdb_id
 
-# 3. Processing & UI
+# 4. Processing & UI
 if file_path and os.path.exists(file_path):
     try:
         parser = PDBParser(QUIET=True)
@@ -44,24 +45,13 @@ if file_path and os.path.exists(file_path):
         col1, col2 = st.columns([1, 1])
 
         with col1:
-            st.subheader("3D Visualization")
-            # Create the 3D view
-            view = py3Dmol.view(width=500, height=500)
-            with open(file_path, 'r') as f:
-                view.addModel(f.read(), 'pdb')
-            
-            view.setStyle({'cartoon': {'color': 'spectrum'}})
-            # Highlight active sites
-            view.addStyle({'resn': 'HIS'}, {'stick': {'color': 'red'}})
-            view.addStyle({'resn': 'SER'}, {'stick': {'color': 'blue'}})
-            view.addStyle({'resn': 'ASP'}, {'stick': {'color': 'green'}})
-            view.zoomTo()
-            
-            # Show the viewer
-            show_st_py3dmol(view)
-            st.caption("🔴 HIS | 🔵 SER | 🟢 ASP")
+            st.subheader("3D Visualization (Molstar)")
+            # Using Molstar for visualization
+            # It automatically handles the file reading and rendering
+            st_molstar(file_path, height=500)
+            st.caption("Use the 'Selection' panel in Molstar to highlight HIS, SER, or ASP residues.")
 
-        # Data extraction
+        # Data extraction for the report
         res_map = {'HIS': [], 'SER': [], 'ASP': []}
         for model in structure:
             for chain in model:
@@ -72,7 +62,6 @@ if file_path and os.path.exists(file_path):
         with col2:
             st.subheader("Analysis & Download")
             
-            # Word Report Generator
             def generate_docx():
                 doc = Document()
                 doc.add_heading(f'Active Site Report: {name_tag.upper()}', 0)
