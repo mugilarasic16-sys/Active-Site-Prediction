@@ -3,3 +3,4 @@ pandas
 numpy
 biopython
 python-docx
+py3Dmol
