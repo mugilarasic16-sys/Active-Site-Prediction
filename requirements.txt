@@ -1,0 +1,4 @@
+streamlit
+biopython
+st-py3dmol
+python-docx
