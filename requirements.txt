@@ -3,5 +3,4 @@ pandas
 numpy
 biopython
 python-docx
-py3Dmol
-st-py3dmol
+streamlit-molstar
