@@ -1,5 +1,7 @@
 streamlit
 biopython==1.81
+numpy
+pandas
 py3Dmol
 st-py3dmol
 python-docx
