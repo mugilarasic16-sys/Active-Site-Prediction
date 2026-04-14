@@ -1,5 +1,5 @@
 streamlit
 biopython==1.81
-py3Dmol==2.0.3
-st-py3dmol==0.0.1
-python-docx==0.8.11
+py3Dmol
+st-py3dmol
+python-docx
