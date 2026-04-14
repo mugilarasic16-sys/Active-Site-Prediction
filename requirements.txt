@@ -1,5 +1,6 @@
 streamlit
-pandas
-numpy
 biopython
 python-docx
+streamlit-molstar
+py3Dmol
+Pillow
